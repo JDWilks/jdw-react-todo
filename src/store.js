@@ -1,26 +1,7 @@
 import create from "zustand";
 
 const UseStore = create((set, get) => ({
-  todos: [
-    {
-      title: "do this 1",
-      completed: false,
-      body: "this is the actual todo",
-      id: 1,
-    },
-    {
-      title: "do this 2",
-      completed: false,
-      body: "this is the actual todo",
-      id: 2,
-    },
-    {
-      title: "do this 3",
-      completed: true,
-      body: "this is the actual todo",
-      id: 3,
-    },
-  ],
+  todos: [],
 
   fetchTodos: () => {
     fetch("http://localhost:4000/todos")
@@ -49,6 +30,33 @@ const UseStore = create((set, get) => ({
       )
       .then((resp) => resp.json())
       .then((resp) => console.log("patch", resp));
+  },
+
+  addNewTodo: (newTodo) => {
+    fetch("http://localhost:4000/todos/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newTodo),
+    })
+      // .then(resp => resp.json())
+      .then(get().fetchTodos())
+      .catch((error) => {
+        console.error("error", error);
+      });
+  },
+
+  deleteTodo: (todoToDelete) => {
+    let id = todoToDelete.id;
+    fetch(`http://localhost:4000/todos/${id}`, {
+      method: "DELETE",
+    })
+      .then(
+        set({
+          todos: get().todos.filter((todo) => todo.id !== todoToDelete.id),
+        })
+      )
+      .then(console.log("todos leftover", get().todos))
+      .then(console.log("todo deleted", todoToDelete));
   },
 }));
 
